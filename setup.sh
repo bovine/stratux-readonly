@@ -1,51 +1,50 @@
 #!/bin/bash
 
 ##
-## Pi Update / Make-Read-Only Script
+## Pi Update / Make-Read-Only Script.
 ## 
-## RUN THIS ON YOUR Linux / Mac / Windows SYSTEM - NOT THE PI!!!!
+## Download the script files from: https://github.com/cyoung/stratux/issues/78
+## When unpacked, you will have a folder named "ropi"
+## 
+## In the folder downloaded from above, save this script starting from the #!/bin/bash as a text file and name the
+## file "setup.sh" replacing the "setup.sh" in the "ropi" directory
+## 
+## With Filezilla copy "ropi" directory to the pi to /home/pi/ 
+## 
+## Connect pi to Ethernet for Internet access to install packages in script
 ##
-## This script assumes you have valid keys in /etc/ssh/authorized_keys/root
-## Make sure to set the "PIIP" variable for the Pi to update.
+## SSH to the pi and within the /home/pi/ropi directory and run: sudo bash setup.sh 
+## 
+## After installation: sudo reboot or sudo halt
 ##
-
-
-# check the $PIIP var
-if [ -z "$PIIP" ]; then
-    echo "PIIP var must be set with the IP of the Pi to update"
-    exit 1
-fi
 
 # Replace the default DHCP server startup file
-scp isc-dhcp-server root@$PIIP:/etc/init.d/isc-dhcp-server
+scp /home/pi/ropi/isc-dhcp-server /etc/init.d/isc-dhcp-server
 
 # Remove the checkroot-bootclean.sh script
-ssh root@$PIIP 'update-rc.d -f checkroot-bootclean.sh remove'
-ssh root@$PIIP 'rm -f /etc/init.d/checkroot-bootclean.sh'
+update-rc.d -f checkroot-bootclean.sh remove
+rm -f /etc/init.d/checkroot-bootclean.sh
 
 # Add the ro / rw commands
-scp ro root@$PIIP:/usr/bin/ro
-scp rw root@$PIIP:/usr/bin/rw
+scp /home/pi/ropi/ro /usr/bin/ro
+scp /home/pi/ropi/rw /usr/bin/rw
 
 # Remove a bunch of stuff we don't need 
-ssh root@$PIIP 'apt-get -y remove --purge triggerhappy cron logrotate dphys-swapfile fake-hwclock'
-ssh root@$PIIP 'apt-get -y autoremove --purge'
+apt-get -y remove --purge triggerhappy cron logrotate dphys-swapfile fake-hwclock
+apt-get -y autoremove --purge
 
 # Install the busybox version of syslogd
-ssh root@$PIIP 'apt-get -y install busybox-syslogd'
-ssh root@$PIIP 'dpkg --purge rsyslog'
+apt-get -y install busybox-syslogd
+dpkg --purge rsyslog
 
 # Delete a bunch of stuff to make clean mount points
-ssh root@$PIIP 'rm -rf /tmp/*'
-ssh root@$PIIP 'rm -rf /var/tmp/*'
-ssh root@$PIIP 'rm -rf /var/log/*'
-ssh root@$PIIP 'rm -rf /var/lib/dhcp/*'
+rm -rf /tmp/*
+rm -rf /var/tmp/*
+rm -rf /var/log/*
+rm -rf /var/lib/dhcp/*
 
 # Replace the /boot/cmdline.txt file with the RO, fastboot version
-scp cmdline.txt root@$PIIP:/boot/cmdline.txt
+scp /home/pi/ropi/cmdline.txt /boot/cmdline.txt
 
 # Replace the fstab with our RO version
-scp fstab root@$PIIP:/etc/fstab
-
-
-
+scp /home/pi/ropi/fstab /etc/fstab
