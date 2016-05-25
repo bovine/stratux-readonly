@@ -3,16 +3,32 @@
 A very simple script to make a Pi read-only. Run this on your
 desktop system and it will update the Pi. To do this:
 
-First, copy your public key to the Pi's /etc/ssh/authorized_keys/root/ folder
+First, download the tarball (tar.gz) of the latest release from the following
+location and save it to your laptop/desktop computer:
+https://github.com/bovine/stratux-readonly/releases
 
-    $ scp mykey.pub pi@[your pi's ip]:/etc/ssh/authorized_keys/root/
+Power up your Stratux device and join your laptop/desktop computer
+to the "stratux" WiFi network.
 
-Next, set an environment variable for the Pi's IP address:
+Transfer the saved tarball to 192.168.10.1 using scp,
+logging in as user "pi" password "raspberry" and putting the file into
+the directory /home/pi/ (Windows users can use WinSCP or another program
+that supports scp)
 
-   $ export PIIP=10.0.1.70
+    $ scp xxxx.tar.gz pi@192.168.10.1:/home/pi/
 
-Finally, run the setup.sh script:
+Now SSH into the stratux with the same password as above (Windows users can use Putty):
 
-    $ ./setup.sh
+    $ ssh pi@192.168.10.1
+
+Once connected, extract the tarball and run the setup.sh script:
+
+    $ tar xvzf xxxx.tar.gz
+    $ cd xxxx
+    $ sudo ./setup.sh
+
+If the installation appears successful you can reboot the Stratux with following:
+
+   $ sudo reboot
 
 
